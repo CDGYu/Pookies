@@ -4,7 +4,7 @@ import { InventoryItem, Category, CATEGORY_LABELS } from '../data/inventory';
 
 interface EditItemModalProps {
   item: InventoryItem;
-  onUpdate: (updates: Partial<InventoryItem>) => void;
+  onUpdate: (updates: Partial<InventoryItem>) => Promise<void>;
   onClose: () => void;
 }
 
@@ -22,10 +22,16 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
     costPerUnit: item.costPerUnit,
     supplier: item.supplier || '',
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(formData);
+    setIsLoading(true);
+    try {
+      await onUpdate(formData);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const set = (field: string, value: string | number) =>
@@ -42,7 +48,7 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
             </h2>
             <p className="text-xs text-[#C5B5A8] mt-0.5">{item.name}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-[#C5B5A8] hover:text-[#9A8F86] hover:bg-[#F5EFE6] transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-lg text-[#C5B5A8] hover:text-[#9A8F86] hover:bg-[#F5EFE6] transition-colors disabled:opacity-50" disabled={isLoading}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -56,6 +62,7 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
               value={formData.name}
               onChange={e => set('name', e.target.value)}
               className={inputClass}
+              disabled={isLoading}
             />
           </div>
 
@@ -65,6 +72,7 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
               value={formData.category}
               onChange={e => set('category', e.target.value)}
               className={inputClass}
+              disabled={isLoading}
             >
               {(Object.keys(CATEGORY_LABELS) as Category[]).map(cat => (
                 <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
@@ -83,6 +91,7 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
                 value={formData.quantity}
                 onChange={e => set('quantity', parseFloat(e.target.value))}
                 className={inputClass}
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -91,6 +100,7 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
                 value={formData.unit}
                 onChange={e => set('unit', e.target.value)}
                 className={inputClass}
+                disabled={isLoading}
               >
                 <option value="g">g (grams)</option>
                 <option value="ml">ml (milliliters)</option>
@@ -112,6 +122,7 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
                 value={formData.minStock}
                 onChange={e => set('minStock', parseFloat(e.target.value))}
                 className={inputClass}
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -124,6 +135,7 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
                 value={formData.costPerUnit}
                 onChange={e => set('costPerUnit', parseFloat(e.target.value))}
                 className={inputClass}
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -136,6 +148,7 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
               onChange={e => set('supplier', e.target.value)}
               className={inputClass}
               placeholder="Optional"
+              disabled={isLoading}
             />
           </div>
 
@@ -143,17 +156,19 @@ export function EditItemModal({ item, onUpdate, onClose }: EditItemModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-[#F0DCC0] text-[#9A8F86] rounded-xl hover:bg-[#F5EFE6] transition-colors text-sm"
+              className="flex-1 px-4 py-2.5 border border-[#F0DCC0] text-[#9A8F86] rounded-xl hover:bg-[#F5EFE6] transition-colors text-sm disabled:opacity-50"
+              disabled={isLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm transition-colors disabled:opacity-50"
               style={{ background: '#4A7C59' }}
+              disabled={isLoading}
             >
               <Save className="w-4 h-4" />
-              Save Changes
+              {isLoading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </form>

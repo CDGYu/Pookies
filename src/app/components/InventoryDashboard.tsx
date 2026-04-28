@@ -48,6 +48,14 @@ import {
   Category,
   CATEGORY_LABELS,
 } from '../data/inventory';
+import {
+  addIngredient,
+  updateIngredient,
+  deleteIngredient,
+  getStock,
+  AddIngredientPayload,
+  UpdateIngredientPayload,
+} from '../services/inventoryApi';
 
 type Tab = 'inventory' | 'costing' | 'calculator';
 
@@ -72,6 +80,36 @@ export function InventoryDashboard({ posSyncSignal }: InventoryDashboardProps = 
 
   // Track the last-processed sale ID to prevent duplicate deductions
   const lastSyncId = useRef<string | null>(null);
+
+  // ── Fetch inventory from backend on mount ───────────────────────────────
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const response = await getStock();
+        
+        // Map backend StockIngredient to frontend InventoryItem
+        const items: InventoryItem[] = response.ingredients.map(ingredient => ({
+          id: ingredient.id,
+          name: ingredient.name,
+          category: ingredient.category as Category,
+          quantity: ingredient.current_stock,
+          unit: ingredient.unit,
+          minStock: ingredient.min_stock_level,
+          costPerUnit: ingredient.unit_cost,
+          supplier: ingredient.supplier ?? '',
+          lastUpdated: new Date(),
+        }));
+        
+        setInventory(items);
+      } catch (err) {
+        console.error('[fetchInventory]', err);
+        // Fall back to initialInventory if fetch fails
+        console.warn('Failed to fetch inventory from backend, using local data');
+      }
+    };
+
+    fetchInventory();
+  }, []);
 
   // ── POS sync ────────────────────────────────────────────────────────────
   // Negative stock is intentionally allowed (matches backend policy).
@@ -106,23 +144,107 @@ export function InventoryDashboard({ posSyncSignal }: InventoryDashboardProps = 
   );
 
   // ── CRUD ─────────────────────────────────────────────────────────────────
-  const addItem = (item: Omit<InventoryItem, 'id' | 'lastUpdated'>) => {
-    setInventory(prev => [
-      ...prev,
-      { ...item, id: Date.now().toString(), lastUpdated: new Date() },
-    ]);
+  const addItem = async (item: Omit<InventoryItem, 'id' | 'lastUpdated'>) => {
+    try {
+      const ingredientId = Date.now().toString();
+      const payload: AddIngredientPayload = {
+        id: ingredientId,
+        name: item.name,
+        category: item.category,
+        unit: item.unit,
+        unit_cost: item.costPerUnit,
+        min_stock_level: item.minStock,
+        current_stock: item.quantity,
+        supplier: item.supplier || undefined,
+      };
+      
+      const response = await addIngredient(payload);
+      
+      setInventory(prev => [
+        ...prev,
+        {
+          id: ingredientId,
+          ...item,
+          lastUpdated: new Date(),
+        },
+      ]);
+      setShowAddModal(false);
+    } catch (err) {
+      console.error('[addItem]', err);
+      alert(`Failed to add ingredient: ${(err as Error).message}`);
+    }
   };
 
-  const updateItem = (id: string, updates: Partial<InventoryItem>) => {
-    setInventory(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, ...updates, lastUpdated: new Date() } : item
-      )
-    );
+  const updateItem = async (id: string, updates: Partial<InventoryItem>) => {
+    try {
+      const currentItem = inventory.find(i => i.id === id);
+      if (!currentItem) return;
+
+      const payload: UpdateIngredientPayload = {};
+      
+      if (updates.name !== undefined && updates.name !== currentItem.name) {
+        payload.name = updates.name;
+      }
+      if (updates.category !== undefined && updates.category !== currentItem.category) {
+        payload.category = updates.category;
+      }
+      if (updates.costPerUnit !== undefined && updates.costPerUnit !== currentItem.costPerUnit) {
+        payload.unit_cost = updates.costPerUnit;
+      }
+      if (updates.minStock !== undefined && updates.minStock !== currentItem.minStock) {
+        payload.min_stock_level = updates.minStock;
+      }
+      if (updates.quantity !== undefined && updates.quantity !== currentItem.quantity) {
+        payload.current_stock = updates.quantity;
+      }
+      if (updates.supplier !== undefined && updates.supplier !== currentItem.supplier) {
+        payload.supplier = updates.supplier;
+      }
+
+      // Only make API call if there are actual changes
+      if (Object.keys(payload).length > 0) {
+        console.log(`[updateItem] Calling API for ingredient ${id}:`, payload);
+        const response = await updateIngredient(id, payload);
+        console.log(`[updateItem] API response:`, response);
+      }
+
+      setInventory(prev =>
+        prev.map(item =>
+          item.id === id ? { ...item, ...updates, lastUpdated: new Date() } : item
+        )
+      );
+    } catch (err) {
+      console.error('[updateItem] Error:', err);
+      alert(`Failed to update ingredient: ${(err as Error).message}`);
+      // Re-fetch from backend to reset UI to actual state
+      try {
+        const response = await getStock();
+        const items: InventoryItem[] = response.ingredients.map(ingredient => ({
+          id: ingredient.id,
+          name: ingredient.name,
+          category: ingredient.category as Category,
+          quantity: ingredient.current_stock,
+          unit: ingredient.unit,
+          minStock: ingredient.min_stock_level,
+          costPerUnit: ingredient.unit_cost,
+          supplier: ingredient.supplier ?? '',
+          lastUpdated: new Date(),
+        }));
+        setInventory(items);
+      } catch (e) {
+        console.error('[updateItem] Failed to re-fetch inventory:', e);
+      }
+    }
   };
 
-  const deleteItem = (id: string) => {
-    setInventory(prev => prev.filter(item => item.id !== id));
+  const deleteItem = async (id: string) => {
+    try {
+      await deleteIngredient(id);
+      setInventory(prev => prev.filter(item => item.id !== id));
+    } catch (err) {
+      console.error('[deleteItem]', err);
+      alert(`Failed to delete ingredient: ${(err as Error).message}`);
+    }
   };
 
   const handleStockIn = (updates: Record<string, number>) => {

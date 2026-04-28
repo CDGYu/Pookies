@@ -3,7 +3,7 @@ import { X, Plus } from 'lucide-react';
 import { InventoryItem, Category, CATEGORY_LABELS } from '../data/inventory';
 
 interface AddItemModalProps {
-  onAdd: (item: Omit<InventoryItem, 'id' | 'lastUpdated'>) => void;
+  onAdd: (item: Omit<InventoryItem, 'id' | 'lastUpdated'>) => Promise<void>;
   onClose: () => void;
 }
 
@@ -21,12 +21,17 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
     costPerUnit: 0,
     supplier: '',
   });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.name && formData.unit) {
-      onAdd(formData);
-      onClose();
+    if (!formData.name || !formData.unit) return;
+    
+    setIsLoading(true);
+    try {
+      await onAdd(formData);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -41,7 +46,7 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
           <h2 style={{ fontFamily: "'DM Serif Display', serif", fontSize: '1.25rem', color: '#2C1810' }}>
             Add New Item
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-[#C5B5A8] hover:text-[#9A8F86] hover:bg-[#F5EFE6] transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-lg text-[#C5B5A8] hover:text-[#9A8F86] hover:bg-[#F5EFE6] transition-colors" disabled={isLoading}>
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -56,6 +61,7 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
               onChange={e => set('name', e.target.value)}
               className={inputClass}
               placeholder="e.g., Adoleaf Matcha"
+              disabled={isLoading}
             />
           </div>
 
@@ -65,6 +71,7 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
               value={formData.category}
               onChange={e => set('category', e.target.value)}
               className={inputClass}
+              disabled={isLoading}
             >
               {(Object.keys(CATEGORY_LABELS) as Category[]).map(cat => (
                 <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
@@ -83,6 +90,7 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
                 value={formData.quantity}
                 onChange={e => set('quantity', parseFloat(e.target.value))}
                 className={inputClass}
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -91,6 +99,7 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
                 value={formData.unit}
                 onChange={e => set('unit', e.target.value)}
                 className={inputClass}
+                disabled={isLoading}
               >
                 <option value="g">g (grams)</option>
                 <option value="ml">ml (milliliters)</option>
@@ -112,6 +121,7 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
                 value={formData.minStock}
                 onChange={e => set('minStock', parseFloat(e.target.value))}
                 className={inputClass}
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -125,6 +135,7 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
                 onChange={e => set('costPerUnit', parseFloat(e.target.value))}
                 className={inputClass}
                 placeholder="₱ per g/ml/pc"
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -137,6 +148,7 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
               onChange={e => set('supplier', e.target.value)}
               className={inputClass}
               placeholder="Optional"
+              disabled={isLoading}
             />
           </div>
 
@@ -144,7 +156,8 @@ export function AddItemModal({ onAdd, onClose }: AddItemModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-[#F0DCC0] text-[#9A8F86] rounded-xl hover:bg-[#F5EFE6] transition-colors text-sm"
+              className="flex-1 px-4 py-2.5 border border-[#F0DCC0] text-[#9A8F86] rounded-xl hover:bg-[#F5EFE6] transition-colors text-sm disabled:opacity-50"
+              disabled={isLoading}
             >
               Cancel
             </button>

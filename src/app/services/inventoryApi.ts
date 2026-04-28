@@ -183,6 +183,35 @@ async function apiPatch<T>(endpoint: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function apiPut<T>(endpoint: string, body: unknown): Promise<T> {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method:  'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      (err as { message?: string }).message ?? `PUT ${endpoint} failed: HTTP ${res.status}`
+    );
+  }
+  return res.json() as Promise<T>;
+}
+
+async function apiDelete<T>(endpoint: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method:  'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(
+      (err as { message?: string }).message ?? `DELETE ${endpoint} failed: HTTP ${res.status}`
+    );
+  }
+  return res.json() as Promise<T>;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Endpoints
 // ─────────────────────────────────────────────────────────────────────────────
@@ -307,4 +336,86 @@ export async function checkStockBeforeSale(
     isAvailable: shortfalls.length === 0,
     shortfalls,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Ingredient CRUD operations
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * addIngredient
+ * POST /api/inventory/add
+ *
+ * Creates a new ingredient in the master list.
+ */
+export interface AddIngredientPayload {
+  id: string;
+  name: string;
+  category: string;
+  unit: string;
+  unit_cost: number;
+  min_stock_level: number;
+  current_stock?: number;
+  supplier?: string;
+}
+
+export interface AddIngredientResponse {
+  status: string;
+  ingredient: StockIngredient;
+  message: string;
+}
+
+export async function addIngredient(payload: AddIngredientPayload): Promise<AddIngredientResponse> {
+  return apiPost<AddIngredientResponse>('/api/inventory/add', payload);
+}
+
+/**
+ * updateIngredient
+ * PUT /api/inventory/update/:id
+ *
+ * Updates ingredient metadata and/or current stock.
+ * Changes are logged as ADJUSTMENT transactions.
+ */
+export interface UpdateIngredientPayload {
+  name?: string;
+  category?: string;
+  unit_cost?: number;
+  min_stock_level?: number;
+  current_stock?: number;
+  supplier?: string;
+}
+
+export interface UpdateIngredientResponse {
+  status: string;
+  ingredient: StockIngredient;
+  stockDelta: number;
+  message: string;
+}
+
+export async function updateIngredient(
+  id: string,
+  payload: UpdateIngredientPayload
+): Promise<UpdateIngredientResponse> {
+  return apiPut<UpdateIngredientResponse>(`/api/inventory/update/${id}`, payload);
+}
+
+/**
+ * deleteIngredient
+ * DELETE /api/inventory/delete/:id
+ *
+ * Permanently removes an ingredient and its transaction history.
+ */
+export interface DeleteIngredientResponse {
+  status: string;
+  deleted: {
+    id: string;
+    name: string;
+    finalStock: number;
+    unit: string;
+  };
+  message: string;
+}
+
+export async function deleteIngredient(id: string): Promise<DeleteIngredientResponse> {
+  return apiDelete<DeleteIngredientResponse>(`/api/inventory/delete/${id}`);
 }

@@ -1,0 +1,17 @@
+{
+  "date": "2026-04-28",
+  "entries": [
+    {
+      "timestamp": "2026-04-28T11:49:05.111Z",
+      "type": "ADJUSTMENT",
+      "saleId": null,
+      "items": [
+        {
+          "ingredientId": "bakingSoda",
+          "amount": 200,
+          "unit": "g"
+        }
+      ]
+    }
+  ]
+}
