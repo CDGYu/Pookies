@@ -16,7 +16,7 @@
 const path     = require('path');
 const Database = require('better-sqlite3');
 
-const DB_PATH = path.join(__dirname, '..', 'pookies_inventory.db');
+const DB_PATH = process.env.POOKIES_DB_PATH || path.join(__dirname, '..', 'pookies_inventory.db');
 
 let _db = null;
 
@@ -79,6 +79,39 @@ function _initSchema(db) {
       upload_date     TEXT    NOT NULL,
       confirmed_data  TEXT    NOT NULL DEFAULT '[]'
     );
+
+    -- Sales (permanent — never purged)
+    CREATE TABLE IF NOT EXISTS sales (
+      id              INTEGER PRIMARY KEY AUTOINCREMENT,
+      sale_number     TEXT    UNIQUE NOT NULL,
+      created_at      TEXT    NOT NULL,
+      subtotal        REAL    NOT NULL,
+      discount        REAL    NOT NULL DEFAULT 0,
+      total           REAL    NOT NULL,
+      cost_total      REAL    NOT NULL DEFAULT 0,
+      payment_method  TEXT    NOT NULL,
+      amount_tendered REAL,
+      change_due      REAL,
+      cash_amount     REAL    NOT NULL DEFAULT 0,
+      ewallet_amount  REAL    NOT NULL DEFAULT 0,
+      reference_no    TEXT,
+      receipt_image   TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS sale_items (
+      id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+      sale_id             INTEGER NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
+      recipe_sku          TEXT    NOT NULL,
+      name                TEXT    NOT NULL,
+      variant             TEXT,
+      unit_price          REAL    NOT NULL,
+      quantity            INTEGER NOT NULL,
+      line_total          REAL    NOT NULL,
+      customization_label TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sales_created   ON sales (created_at);
+    CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items (sale_id);
   `);
 }
 
@@ -358,12 +391,23 @@ function p4(n) {
   return Math.round(n * 10_000) / 10_000;
 }
 
-module.exports = { 
-  getDb, 
+// ── Test helper ───────────────────────────────────────────────────────────────
+
+/**
+ * closeDb — Closes and nullifies the singleton connection.
+ * Primarily for use in tests so each test suite can use a throwaway DB.
+ */
+function closeDb() {
+  if (_db) { _db.close(); _db = null; }
+}
+
+module.exports = {
+  getDb,
   p4,
   // Export new utilities
   cleanupOldLogs,
   getInventoryValuation,
   getLowStockItems,
-  getSalesAnalytics
+  getSalesAnalytics,
+  closeDb
 };
