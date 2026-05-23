@@ -6,6 +6,7 @@ import { SalesReportPage } from './routes/manager/SalesReportPage';
 import { StockPage } from './routes/manager/StockPage';
 import { CostingPage } from './routes/manager/CostingPage';
 import { CartProvider } from './state/CartContext';
+import { ReceiptPage } from './routes/ReceiptPage';
 import '../styles/fonts.css';
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
         <AppHeader />
         <Routes>
           <Route path="/" element={<CartProvider><RegisterPage /></CartProvider>} />
+          <Route path="/receipt/:id" element={<ReceiptPage />} />
           <Route path="/manager" element={<ManagerLayout />}>
             <Route index element={<Navigate to="/manager/sales" replace />} />
             <Route path="sales" element={<SalesReportPage />} />
