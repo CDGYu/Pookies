@@ -152,4 +152,44 @@ function getSaleById(req, res) {
   }
 }
 
-module.exports = { createSale, listSales, getSaleById, rowToSale };
+function dailyReport(req, res) {
+  try {
+    const db = getDb();
+    const date = (req.query && req.query.date) || new Date().toISOString().slice(0, 10);
+
+    const totals = db.prepare(`
+      SELECT COUNT(*) AS order_count,
+             COALESCE(SUM(total), 0) AS total_sales,
+             COALESCE(SUM(cost_total), 0) AS cost_total
+      FROM sales WHERE date(created_at) = date(?)
+    `).get(date);
+
+    const byPayment = db.prepare(`
+      SELECT payment_method AS method, ROUND(SUM(total), 2) AS amount, COUNT(*) AS count
+      FROM sales WHERE date(created_at) = date(?)
+      GROUP BY payment_method ORDER BY amount DESC
+    `).all(date);
+
+    const byProduct = db.prepare(`
+      SELECT si.name AS name, SUM(si.quantity) AS qty, ROUND(SUM(si.line_total), 2) AS revenue
+      FROM sale_items si JOIN sales s ON s.id = si.sale_id
+      WHERE date(s.created_at) = date(?)
+      GROUP BY si.name ORDER BY revenue DESC
+    `).all(date);
+
+    res.json({
+      date,
+      orderCount: totals.order_count,
+      totalSales: p4(totals.total_sales),
+      estProfit: p4(totals.total_sales - totals.cost_total),
+      byPayment: byPayment.map(p => ({ method: p.method, amount: p4(p.amount), count: p.count })),
+      byProduct: byProduct.map(p => ({ name: p.name, qty: p.qty, revenue: p4(p.revenue) })),
+      topSeller: byProduct[0]?.name ?? null,
+    });
+  } catch (err) {
+    console.error('[dailyReport]', err.message);
+    res.status(500).json({ message: 'Failed to build report.' });
+  }
+}
+
+module.exports = { createSale, listSales, getSaleById, dailyReport, rowToSale };
