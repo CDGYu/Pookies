@@ -151,6 +151,7 @@ const BATCH_DOUGH_WEIGHT_G = BATCH_COOKIE_COUNT * INDIVIDUAL_COOKIE_G; // 720g
 const DOUGH_INDIVIDUAL_G   = 40;  // 1 individual piece
 const DOUGH_BOX5_G         = 125; // 5 × 25g
 const DOUGH_MINI3_G        = 60;  // 3 × 20g
+const DOUGH_PACK6_G        = 240; // 6 cookies × 40g
 const DOUGH_MIXED_SLOT_G   = 25;  // 1 slot in a Mixed Box of 5
 
 /**
@@ -300,6 +301,12 @@ export const RECIPE_BOOK: Record<string, IngredientRequirement[]> = {
     { ingredientId: 'packagingBox', amount: 1, unit: 'pcs' },
   ],
 
+  /** Pack of 6 — 240g dough (6 × 40g), scaled from classic batch */
+  c1_pack6: [
+    ...scaleBatch(CLASSIC_BATCH, DOUGH_PACK6_G),
+    { ingredientId: 'packagingBox', amount: 1, unit: 'pcs' },
+  ],
+
   // ── Red Velvet ────────────────────────────────────────────────────────
 
   /** Individual piece — 40g dough (1/18 of red velvet batch) */
@@ -317,6 +324,12 @@ export const RECIPE_BOOK: Record<string, IngredientRequirement[]> = {
     { ingredientId: 'packagingBox', amount: 1, unit: 'pcs' },
   ],
 
+  /** Pack of 6 — red velvet */
+  c2_pack6: [
+    ...scaleBatch(RED_VELVET_BATCH, DOUGH_PACK6_G),
+    { ingredientId: 'packagingBox', amount: 1, unit: 'pcs' },
+  ],
+
   // ── S'mores ───────────────────────────────────────────────────────────
 
   /** Individual piece — 40g dough (1/18 of s'mores batch) */
@@ -331,6 +344,12 @@ export const RECIPE_BOOK: Record<string, IngredientRequirement[]> = {
   /** Mini Box of 3 — 60g total dough (3 × 20g), scaled from s'mores batch */
   c3_mini3: [
     ...scaleBatch(SMORES_BATCH, DOUGH_MINI3_G),
+    { ingredientId: 'packagingBox', amount: 1, unit: 'pcs' },
+  ],
+
+  /** Pack of 6 — s'mores */
+  c3_pack6: [
+    ...scaleBatch(SMORES_BATCH, DOUGH_PACK6_G),
     { ingredientId: 'packagingBox', amount: 1, unit: 'pcs' },
   ],
 
