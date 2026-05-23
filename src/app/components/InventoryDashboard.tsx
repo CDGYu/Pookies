@@ -35,10 +35,10 @@ import {
   Info,
   ShieldAlert,
 } from 'lucide-react';
-import { InventoryList }    from './InventoryList';
-import { AddItemModal }     from './AddItemModal';
-import { StockInModal }     from './StockInModal';
-import { StatsCard }        from './StatsCard';
+import { InventoryList }    from './stock/InventoryList';
+import { AddItemModal }     from './stock/AddItemModal';
+import { StockInModal }     from './stock/StockInModal';
+import { StatsCard }        from './stock/StatsCard';
 import { ProductCosting }   from './ProductCosting';
 import { BatchCalculator }  from './BatchCalculator';
 import { CanIBakePanel }    from './CanIBakePanel';

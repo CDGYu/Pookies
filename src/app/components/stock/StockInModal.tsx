@@ -12,8 +12,8 @@ import {
   ChevronUp,
   Loader,
 } from 'lucide-react';
-import { InventoryItem, CATEGORY_LABELS, Category } from '../data/inventory';
-import { uploadReceipt, restockIngredient } from '../services/inventoryApi';
+import { InventoryItem, CATEGORY_LABELS, Category } from '../../data/inventory';
+import { uploadReceipt, restockIngredient } from '../../services/inventoryApi';
 
 interface StockInModalProps {
   inventory: InventoryItem[];

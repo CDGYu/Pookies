@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
-import { InventoryItem, Category, CATEGORY_LABELS } from '../data/inventory';
+import { InventoryItem, Category, CATEGORY_LABELS } from '../../data/inventory';
 
 interface AddItemModalProps {
   onAdd: (item: Omit<InventoryItem, 'id' | 'lastUpdated'>) => Promise<void>;

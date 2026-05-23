@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Save } from 'lucide-react';
-import { InventoryItem, Category, CATEGORY_LABELS } from '../data/inventory';
+import { InventoryItem, Category, CATEGORY_LABELS } from '../../data/inventory';
 
 interface EditItemModalProps {
   item: InventoryItem;

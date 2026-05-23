@@ -22,7 +22,7 @@ import {
   CheckCircle,
   ShieldAlert,
 } from 'lucide-react';
-import { InventoryItem, CATEGORY_LABELS, CATEGORY_COLORS } from '../data/inventory';
+import { InventoryItem, CATEGORY_LABELS, CATEGORY_COLORS } from '../../data/inventory';
 import { EditItemModal } from './EditItemModal';
 
 interface InventoryListProps {

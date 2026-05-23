@@ -3,6 +3,7 @@ import { AppHeader } from './components/AppHeader';
 import { RegisterPage } from './routes/RegisterPage';
 import { ManagerLayout } from './routes/ManagerLayout';
 import { SalesReportPage } from './routes/manager/SalesReportPage';
+import { StockPage } from './routes/manager/StockPage';
 import '../styles/fonts.css';
 
 export default function App() {
@@ -15,7 +16,8 @@ export default function App() {
           <Route path="/manager" element={<ManagerLayout />}>
             <Route index element={<Navigate to="/manager/sales" replace />} />
             <Route path="sales" element={<SalesReportPage />} />
-            {/* stock + costing routes added in Tasks 5 & 6 */}
+            <Route path="stock" element={<StockPage />} />
+            {/* costing route added in Task 6 */}
           </Route>
         </Routes>
       </div>
