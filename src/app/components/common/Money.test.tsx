@@ -10,6 +10,9 @@ describe('formatPeso', () => {
   it('treats negative as zero by default', () => {
     expect(formatPeso(-5)).toBe('₱0.00');
   });
+  it('keeps the sign when allowNegative is set', () => {
+    expect(formatPeso(-50, { allowNegative: true })).toBe('₱-50.00');
+  });
 });
 
 describe('Money', () => {
