@@ -13,7 +13,7 @@ export function buildSalePayload({ saleNumber, lines, payment, costMap }: {
   payment: PaymentPayload;
   costMap: Record<string, number>; // ingredientId -> unit_cost
 }): CreateSalePayload {
-  const total = cartTotal(lines);
+  const total = money(cartTotal(lines));
 
   const items = lines.map(l => ({
     recipeSku: l.recipeSku,
