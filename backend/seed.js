@@ -13,12 +13,21 @@ const STARTING_STOCK = {
   cup12oz: 150, cup16oz: 100, straw: 300,
 };
 
+const expected = Object.keys(STARTING_STOCK).length;
 const db = getDb();
 const upd = db.prepare('UPDATE ingredients SET current_stock = ? WHERE id = ?');
 let n = 0;
-const tx = db.transaction(() => {
-  for (const [id, qty] of Object.entries(STARTING_STOCK)) n += upd.run(qty, id).changes;
-});
-tx();
-console.log(`[seed] starting stock applied to ${n} ingredient(s).`);
-closeDb();
+try {
+  const tx = db.transaction(() => {
+    for (const [id, qty] of Object.entries(STARTING_STOCK)) n += upd.run(qty, id).changes;
+  });
+  tx();
+  console.log(`[seed] starting stock applied to ${n} ingredient(s).`);
+  if (n < expected) {
+    console.warn(`[seed] WARNING: expected ${expected} ingredients but only ${n} matched. ` +
+      `Some ids in STARTING_STOCK may not exist in the database.`);
+    process.exitCode = 1;
+  }
+} finally {
+  closeDb();
+}
