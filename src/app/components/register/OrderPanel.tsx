@@ -1,7 +1,7 @@
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '../../state/CartContext';
 import { OrderLine } from './OrderLine';
-import { Money } from '../common/Money';
+import { Money, formatPeso } from '../common/Money';
 import { Button } from '../common/Button';
 
 export function OrderPanel({ onCharge }: { onCharge: () => void }) {
@@ -26,7 +26,7 @@ export function OrderPanel({ onCharge }: { onCharge: () => void }) {
           <span>Total</span><Money amount={total} />
         </div>
         <Button className="w-full text-base py-3" disabled={lines.length === 0} onClick={onCharge}>
-          Charge {total > 0 ? `₱${total.toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : ''}
+          Charge {total > 0 ? formatPeso(total) : ''}
         </Button>
       </div>
     </div>
