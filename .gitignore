@@ -6,3 +6,6 @@ dist/
 backend/pookies_inventory.db
 backend/pookies_inventory.db-wal
 backend/pookies_inventory.db-shm
+
+# Runtime-generated POS sale receipts (sample rec_*.png stay tracked)
+backend/Receipts/sale_*.png
