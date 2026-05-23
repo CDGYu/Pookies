@@ -1,3 +1,8 @@
 node_modules
 .superpowers/
 dist/
+
+# SQLite database — created on first run; populate with `npm run seed`
+backend/pookies_inventory.db
+backend/pookies_inventory.db-wal
+backend/pookies_inventory.db-shm
