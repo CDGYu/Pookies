@@ -13,6 +13,16 @@
   --cookie-300:  #E8B97A;   /* warm accent (stat card icon)         */
   --cookie-800:  #3C2A1E;   /* primary body text                    */
   --cookie-900:  #2C1810;   /* darkest text (headings)              */
+  --matcha-800:  #2D5A3D;   /* deepest matcha for emphasis          */
+  --cocoa:       #2C1810;   /* rich dark brown                      */
+  --taupe:       #7A6558;   /* muted warm mid-tone                  */
+  --sand:        #9A8F86;   /* neutral warm grey                    */
+  --mint:        #E8F2EB;   /* light mint tint                      */
+  --mint-border: #B8D9C2;   /* mint border accent                   */
+  --alert:       #7A4F1E;   /* warning text                         */
+  --alert-bg:    #FEF3C7;   /* warning background                   */
+  --critical:    #922B21;   /* error / critical text                */
+  --critical-bg: #FEE2E0;   /* error background                     */
 
   --background: #ffffff;
   --foreground: oklch(0.145 0 0);
