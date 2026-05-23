@@ -30,8 +30,8 @@ Open http://localhost:5173. The backend must be running first.
 
 ## Tests
 
-    npm run test                       # frontend (Vitest)
-    node --test backend/__tests__      # backend
+    npm run test            # frontend (Vitest), from repo root
+    cd backend && npm test  # backend (node:test, auto-discovers __tests__)
 
 ## Features
 - **Register** (`/`): product catalog (cookies, drinks, boxes & bundles), variant
