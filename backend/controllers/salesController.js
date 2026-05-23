@@ -113,4 +113,43 @@ function rowToSale(db, row) {
   };
 }
 
-module.exports = { createSale, rowToSale };
+function listSales(req, res) {
+  try {
+    const db = getDb();
+    const { date, from, to } = req.query || {};
+    let where = '';
+    const params = [];
+    if (date) { where = "WHERE date(created_at) = date(?)"; params.push(date); }
+    else if (from && to) { where = "WHERE date(created_at) BETWEEN date(?) AND date(?)"; params.push(from, to); }
+    const rows = db.prepare(`
+      SELECT s.*, COUNT(si.id) AS item_count
+      FROM sales s LEFT JOIN sale_items si ON si.sale_id = s.id
+      ${where}
+      GROUP BY s.id ORDER BY s.created_at DESC
+    `).all(...params);
+    res.json({
+      sales: rows.map(r => ({
+        id: r.id, saleNumber: r.sale_number, createdAt: r.created_at,
+        total: p4(r.total), paymentMethod: r.payment_method,
+        itemCount: r.item_count, receiptImage: r.receipt_image,
+      })),
+    });
+  } catch (err) {
+    console.error('[listSales]', err.message);
+    res.status(500).json({ message: 'Failed to list sales.' });
+  }
+}
+
+function getSaleById(req, res) {
+  try {
+    const db = getDb();
+    const row = db.prepare('SELECT * FROM sales WHERE id = ?').get(req.params.id);
+    if (!row) return res.status(404).json({ message: 'Sale not found.' });
+    res.json({ sale: rowToSale(db, row) });
+  } catch (err) {
+    console.error('[getSaleById]', err.message);
+    res.status(500).json({ message: 'Failed to fetch sale.' });
+  }
+}
+
+module.exports = { createSale, listSales, getSaleById, rowToSale };
