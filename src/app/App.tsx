@@ -4,6 +4,7 @@ import { RegisterPage } from './routes/RegisterPage';
 import { ManagerLayout } from './routes/ManagerLayout';
 import { SalesReportPage } from './routes/manager/SalesReportPage';
 import { StockPage } from './routes/manager/StockPage';
+import { CostingPage } from './routes/manager/CostingPage';
 import '../styles/fonts.css';
 
 export default function App() {
@@ -17,7 +18,7 @@ export default function App() {
             <Route index element={<Navigate to="/manager/sales" replace />} />
             <Route path="sales" element={<SalesReportPage />} />
             <Route path="stock" element={<StockPage />} />
-            {/* costing route added in Task 6 */}
+            <Route path="costing" element={<CostingPage />} />
           </Route>
         </Routes>
       </div>

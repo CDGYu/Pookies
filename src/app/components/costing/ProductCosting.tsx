@@ -1,6 +1,6 @@
 import { useState, ReactNode } from 'react';
 import { Cookie, Coffee, ChevronDown, ChevronUp, TrendingUp, Package } from 'lucide-react';
-import { RECIPES, OVERHEAD_PER_BATCH, Recipe } from '../data/recipes';
+import { RECIPES, OVERHEAD_PER_BATCH, Recipe } from '../../data/recipes';
 
 const TYPE_LABELS: Record<Recipe['type'], { label: string; icon: ReactNode; color: string }> = {
   'cookie-batch': { label: 'Cookie Batch', icon: <Cookie className="w-4 h-4" />, color: 'bg-amber-50 text-amber-700 border-amber-200' },
