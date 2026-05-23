@@ -2,6 +2,23 @@
 
 const { getDb, p4 } = require('../db/database');
 
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+
+const RECEIPTS_DIR = path.join(__dirname, '..', 'Receipts');
+if (!fs.existsSync(RECEIPTS_DIR)) fs.mkdirSync(RECEIPTS_DIR, { recursive: true });
+
+const receiptUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_q, _f, cb) => cb(null, RECEIPTS_DIR),
+    filename: (req, _f, cb) => cb(null, `sale_${req.params.id}_${Date.now()}.png`),
+  }),
+  fileFilter: (_q, file, cb) =>
+    cb(null, ['image/png', 'image/jpeg', 'image/webp'].includes(file.mimetype)),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+
 function createSale(req, res) {
   const { saleNumber, items, subtotal, discount = 0, total, costTotal = 0,
           payment = {}, deductions = [] } = req.body || {};
@@ -192,4 +209,20 @@ function dailyReport(req, res) {
   }
 }
 
-module.exports = { createSale, listSales, getSaleById, dailyReport, rowToSale };
+function uploadSaleReceipt(req, res) {
+  if (!req.file) return res.status(400).json({ message: 'No file. Use field "receipt".' });
+  try {
+    const db = getDb();
+    const sale = db.prepare('SELECT id FROM sales WHERE id = ?').get(req.params.id);
+    if (!sale) { fs.unlink(req.file.path, () => {}); return res.status(404).json({ message: 'Sale not found.' }); }
+    const publicUrl = `/Receipts/${req.file.filename}`;
+    db.prepare('UPDATE sales SET receipt_image = ? WHERE id = ?').run(publicUrl, req.params.id);
+    res.status(201).json({ status: 'ok', receiptImage: publicUrl });
+  } catch (err) {
+    if (req.file?.path) fs.unlink(req.file.path, () => {});
+    console.error('[uploadSaleReceipt]', err.message);
+    res.status(500).json({ message: 'Receipt save failed.' });
+  }
+}
+
+module.exports = { createSale, listSales, getSaleById, dailyReport, receiptUpload, uploadSaleReceipt, rowToSale };

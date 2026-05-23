@@ -68,6 +68,7 @@ if (process.env.NODE_ENV !== 'production') {
 // ── Routes ─────────────────────────────────────────────────────────────────────
 
 app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/sales',    require('./routes/sales'));
 
 // Health check
 app.get('/health', (_req, res) => {
